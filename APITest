@@ -1,0 +1,52 @@
+// Requisição GET para a API
+pm.sendRequest({
+    url: 'https://gorest.co.in/public/v2/todos',
+    method: 'GET',
+    header: {
+        'Content-Type': 'application/json',
+    }
+}, function (err, res) {
+    // Verificar se houve algum erro na requisição
+    if (err) {
+        console.error(err);
+        return;
+    }
+
+    // Armazenar a resposta da API
+    var jsonData = res.json();
+
+    // Validar schema da resposta
+    var schema = {
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {
+                "id": { "type": "number" },
+                "user_id": { "type": "number" },
+                "title": { "type": "string" },
+                "due_on": { "type": "string", "format": "date-time" },
+                "status": { "type": "string", "enum": ["completed", "pending"] }
+            },
+            "required": ["id", "user_id", "title", "due_on", "status"]
+        }
+    };
+    pm.test("Validar schema da resposta", function () {
+        pm.expect(tv4.validate(jsonData, schema)).to.be.true;
+    });
+
+    // Validar se todos os resultados têm status "completed"
+    pm.test("Validar se todos os resultados têm status 'completed'", function () {
+        jsonData.forEach(function (todo) {
+            pm.expect(todo.status).to.equal("completed");
+        });
+    });
+
+    // Interpretação e validação do valor "due_on"
+    pm.test("Interpretar e validar o valor 'due_on'", function () {
+        var responseData = pm.response.json();
+        pm.expect(responseData).to.be.an('array');
+        responseData.forEach(function (todo) {
+            pm.expect(todo.due_on).to.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{2}:\d{2}$/);
+        });
+    });
+});  
