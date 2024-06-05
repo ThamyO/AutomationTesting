@@ -1,0 +1,96 @@
+{
+	"info": {
+		"_postman_id": "6eaea890-407b-4503-94b7-5f5f27db1d5b",
+		"name": "ApiTest",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "11841432"
+	},
+	"item": [
+		{
+			"name": "https://gorest.co.in/public/v2/todos",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Requisição GET para a API\r",
+							"pm.sendRequest({\r",
+							"    url: 'https://gorest.co.in/public/v2/todos',\r",
+							"    method: 'GET',\r",
+							"    header: {\r",
+							"        'Content-Type': 'application/json',\r",
+							"    }\r",
+							"}, function (err, res) {\r",
+							"    // Verificar se houve algum erro na requisição\r",
+							"    if (err) {\r",
+							"        console.error(err);\r",
+							"        return;\r",
+							"    }\r",
+							"\r",
+							"    // Armazenar a resposta da API\r",
+							"    var jsonData = res.json();\r",
+							"\r",
+							"    // Validar schema da resposta\r",
+							"    var schema = {\r",
+							"        \"type\": \"array\",\r",
+							"        \"items\": {\r",
+							"            \"type\": \"object\",\r",
+							"            \"properties\": {\r",
+							"                \"id\": { \"type\": \"number\" },\r",
+							"                \"user_id\": { \"type\": \"number\" },\r",
+							"                \"title\": { \"type\": \"string\" },\r",
+							"                \"due_on\": { \"type\": \"string\", \"format\": \"date-time\" },\r",
+							"                \"status\": { \"type\": \"string\", \"enum\": [\"completed\", \"pending\"] }\r",
+							"            },\r",
+							"            \"required\": [\"id\", \"user_id\", \"title\", \"due_on\", \"status\"]\r",
+							"        }\r",
+							"    };\r",
+							"    pm.test(\"Validar schema da resposta\", function () {\r",
+							"        pm.expect(tv4.validate(jsonData, schema)).to.be.true;\r",
+							"    });\r",
+							"\r",
+							"    // Validar se todos os resultados têm status \"completed\"\r",
+							"    pm.test(\"Validar se todos os resultados têm status 'completed'\", function () {\r",
+							"        jsonData.forEach(function (todo) {\r",
+							"            pm.expect(todo.status).to.equal(\"completed\");\r",
+							"        });\r",
+							"    });\r",
+							"\r",
+							"    // Interpretação e validação do valor \"due_on\"\r",
+							"    pm.test(\"Interpretar e validar o valor 'due_on'\", function () {\r",
+							"        var responseData = pm.response.json();\r",
+							"        pm.expect(responseData).to.be.an('array');\r",
+							"        responseData.forEach(function (todo) {\r",
+							"            pm.expect(todo.due_on).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}[+-]\\d{2}:\\d{2}$/);\r",
+							"        });\r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://gorest.co.in/public/v2/todos",
+					"protocol": "https",
+					"host": [
+						"gorest",
+						"co",
+						"in"
+					],
+					"path": [
+						"public",
+						"v2",
+						"todos"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
